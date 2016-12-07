@@ -1,0 +1,4 @@
+---
+# defaults file for ansible-role-swarm
+proxy: "http://www-proxy-ukc1.uk.oracle.com:80"
+consul_hostname: "{{ groups['consul_cluster'] | random | string }}"

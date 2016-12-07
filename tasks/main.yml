@@ -1,0 +1,42 @@
+---
+# tasks file for ansible-role-swarm
+- name: Get the host ip
+  shell: /tmp/get_ip.sh $(hostname -f)
+  register: host_ip
+  tags: docker
+
+- name: Get the consul bootstrap IP
+  shell: /tmp/get_ip.sh {{ consul_hostname }}
+  register: consul_ip
+  tags: docker
+
+- name: Start the swarm manager
+  when:
+    - inventory_hostname in groups['swarm_managers']
+  docker:
+    name: swarm_manager
+    image: swarm
+    state: reloaded
+    restart_policy: always
+    expose: 4000
+    ports:
+      - "4000:4000"
+    command: >
+      manage -H :4000 --replication
+      --advertise {{ host_ip.stdout }}:4000
+      consul://{{ consul_ip.stdout }}:8500
+  tags: docker
+
+- name: Start the swarm nodes
+  when:
+    - inventory_hostname in groups['swarm_cluster']
+    - inventory_hostname not in groups['swarm_managers']
+  docker:
+    name: swarm_node
+    image: swarm
+    state: reloaded
+    restart_policy: always
+    command: >
+      join --advertise={{ host_ip.stdout }}:2375
+      consul://{{ consul_ip.stdout }}:8500
+  tags: docker
