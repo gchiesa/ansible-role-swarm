@@ -1,0 +1,9 @@
+---
+- name: Install firewalld
+  yum: name={{ item }} state=installed
+  with_items:
+    - iptables-services
+  environment:
+    http_proxy: "{{ proxy }}"
+    https_proxy: "{{ proxy }}"
+  tags: yum

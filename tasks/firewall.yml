@@ -1,0 +1,29 @@
+---
+- name: Check if the swarm_docker chain exists
+  shell: iptables -t filter -L swarm_docker
+  register: fw_swarm_docker
+  ignore_errors: true
+
+- name: Create the SWARM_DOCKER chain
+  shell: iptables -t filter -N swarm_docker && iptables -t filter -I INPUT 1 -j swarm_docker
+  when: fw_swarm_docker.rc != 0
+
+- name: Check if the docker_service is already opened
+  shell: iptables -t filter -L swarm_docker | grep docker_service
+  register: fw_docker_service
+  ignore_errors: true
+
+- name: Open port for docker communication on iptables
+  iptables:
+    table: filter
+    chain: swarm_docker
+    destination_port: 2375
+    protocol: tcp
+    state: present
+    jump: ACCEPT
+    comment: docker_service
+  when: fw_docker_service.rc != 0
+  notify: iptables_reload
+
+- name: Iptables save
+  shell: iptables-save > "{{ iptables_config }}"
