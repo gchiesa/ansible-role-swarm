@@ -1,38 +1,72 @@
-Role Name
-=========
+gchiesa.oel7swarm
+=================
 
-A brief description of the role goes here.
-
-Requirements
-------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Install and setup a swarm cluster on Oracle Linux 7
 
 Role Variables
 --------------
+```
+# proxy server to use for yum installation
+proxy: ""
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+# consul hostname to use for registering
+# it will be randomly choosen from the consul_cluster host group
+consul_hostname: "{{ groups['consul_cluster'] | random | string }}"
+
+# iptables configuration file
+iptables_config: "/etc/sysconfig/iptables"
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+This role depends on ```gchiesa.oel7consul``` since it uses consul as discovery service
 
 Example Playbook
 ----------------
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
-    - hosts: servers
+    - hosts: all
       roles:
-         - { role: username.rolename, x: 42 }
+         - { role: gchiesa.oel7swarm }
+
+The inventory should mention the groups for consul_cluster and swarm_nodes and managers. Check the example inventory below:
+
+```
+[targets:vars]
+ansible_host=localhost  
+ansible_become=true  
+ansible_ssh_user=vagrant  
+ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key  
+proxy=
+
+[consul_cluster:vars]
+consul_bootstrap_hostname=test01.local  
+
+[targets]
+test01.local ansible_port=2200  
+test02.local ansible_port=2201  
+test03.local ansible_port=2202  
+test04.local ansible_port=2203  
+
+[consul_cluster]
+test01.local  
+test02.local  
+test03.local  
+
+[swarm_cluster]
+test01.local  
+test02.local  
+test03.local  
+test04.local  
+
+[swarm_managers]
+test01.local  
+test02.local  
+```
 
 License
 -------
 
 BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
