@@ -1,5 +1,7 @@
 ---
-# tasks file for ansible-role-swarm
+- include: yum.yml
+- include: firewall.yml
+
 - name: Get the host ip
   shell: /tmp/get_ip.sh $(hostname -f)
   register: host_ip
@@ -24,13 +26,12 @@
     command: >
       manage -H :4000 --replication
       --advertise {{ host_ip.stdout }}:4000
-      consul://{{ consul_ip.stdout }}:8500
+      consul://{{ consul_ip.stdout }}:8500/docker
   tags: docker
 
 - name: Start the swarm nodes
   when:
     - inventory_hostname in groups['swarm_cluster']
-    - inventory_hostname not in groups['swarm_managers']
   docker:
     name: swarm_node
     image: swarm
@@ -38,5 +39,5 @@
     restart_policy: always
     command: >
       join --advertise={{ host_ip.stdout }}:2375
-      consul://{{ consul_ip.stdout }}:8500
+      consul://{{ consul_ip.stdout }}:8500/docker
   tags: docker
