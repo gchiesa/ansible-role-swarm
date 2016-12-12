@@ -23,7 +23,7 @@
     jump: ACCEPT
     comment: docker_service
   when: fw_docker_service.rc != 0
-  notify: iptables_reload
+  notify: reload iptables
 
 - name: Iptables save
   shell: iptables-save > "{{ iptables_config }}"
