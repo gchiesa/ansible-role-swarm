@@ -1,4 +1,4 @@
-gchiesa.oel7swarm
+gchiesa.swarm
 =================
 
 Install and setup a swarm cluster on Oracle Linux 7
@@ -16,11 +16,15 @@ consul_hostname: "{{ groups['consul_cluster'] | random | string }}"
 # iptables configuration file
 iptables_config: "/etc/sysconfig/iptables"
 ```
+The cluster is built based on the existence of hosts in two specific hostgroups:
+
+__swarm_managers__ : should contain the manager nodes
+__swarm_agents__ : should contain all the node that should be part of the swarm cluster
 
 Dependencies
 ------------
 
-This role depends on ```gchiesa.oel7consul``` since it uses consul as discovery service
+This role depends on ```gchiesa.consul``` since it uses consul as discovery service
 
 Example Playbook
 ----------------
@@ -29,7 +33,7 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: all
       roles:
-         - { role: gchiesa.oel7swarm }
+         - { role: gchiesa.swarm }
 
 The inventory should mention the groups for consul_cluster and swarm_nodes and managers. Check the example inventory below:
 
@@ -55,7 +59,7 @@ test01.local
 test02.local  
 test03.local  
 
-[swarm_cluster]
+[swarm_agents]
 test01.local  
 test02.local  
 test03.local  

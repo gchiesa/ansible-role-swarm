@@ -17,13 +17,14 @@
   iptables:
     table: filter
     chain: swarm_docker
+    destination: "{{ host_ip.stdout }}/24"
     destination_port: 2375
     protocol: tcp
     state: present
     jump: ACCEPT
     comment: docker_service
   when: fw_docker_service.rc != 0
-  notify: reload iptables
+  # notify: reload iptables
 
 - name: Iptables save
   shell: iptables-save > "{{ iptables_config }}"

@@ -1,7 +1,4 @@
 ---
-- include: yum.yml
-- include: firewall.yml
-
 - name: Get the host ip
   shell: /tmp/get_ip.sh $(hostname -f)
   register: host_ip
@@ -11,6 +8,9 @@
   shell: /tmp/get_ip.sh {{ consul_hostname }}
   register: consul_ip
   tags: docker
+
+- include: yum.yml
+- include: firewall.yml
 
 - name: Start the swarm manager
   when:
@@ -31,7 +31,7 @@
 
 - name: Start the swarm nodes
   when:
-    - inventory_hostname in groups['swarm_cluster']
+    - inventory_hostname in groups['swarm_agents']
   docker:
     name: swarm_node
     image: swarm
