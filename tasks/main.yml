@@ -1,14 +1,5 @@
 ---
-- name: Get the host ip
-  shell: /tmp/get_ip.sh $(hostname -f)
-  register: host_ip
-  tags: docker
-
-- name: Get the consul bootstrap IP
-  shell: /tmp/get_ip.sh {{ consul_hostname }}
-  register: consul_ip
-  tags: docker
-
+- include: ip_detect.yml
 - include: yum.yml
 - include: firewall.yml
 

@@ -1,0 +1,8 @@
+---
+- name: Get the host ip
+  shell: getent ahostsv4 $(hostname -f) | grep -v '127.0' | grep 'STREAM' | awk '{print $1}'
+  register: host_ip
+
+- name: Get the consul bootstrap IP
+  shell: getent hosts  {{ consul_bootstrap_hostname }} | awk '{print $1}'
+  register: bootstrap_ip
