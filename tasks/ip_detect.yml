@@ -4,5 +4,5 @@
   register: host_ip
 
 - name: Get the consul bootstrap IP
-  shell: getent ahostsv4 {{ consul_bootstrap_hostname }} | grep -v '127.0' | grep 'STREAM' | awk '{print $1}'
+  shell: getent ahostsv4 {{ consul_random_hostname }} | grep -v '127.0' | grep 'STREAM' | awk '{print $1}'
   register: consul_ip
