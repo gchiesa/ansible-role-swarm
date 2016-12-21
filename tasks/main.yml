@@ -18,6 +18,7 @@
       manage -H :4000 --replication
       --advertise {{ host_ip.stdout }}:4000
       consul://{{ consul_ip.stdout }}:8500/docker
+    docker_api_version: 1.22
   tags: docker
 
 - name: Start the swarm nodes
@@ -31,4 +32,5 @@
     command: >
       join --advertise={{ host_ip.stdout }}:2375
       consul://{{ consul_ip.stdout }}:8500/docker
+    docker_api_version: 1.22
   tags: docker
