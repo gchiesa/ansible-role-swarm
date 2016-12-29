@@ -17,7 +17,7 @@
   iptables:
     table: filter
     chain: swarm_docker
-    destination: "{{ host_ip.stdout }}/24"
+    # destination: "{{ host_ip.stdout }}/24"
     destination_port: 2375
     protocol: tcp
     state: present
