@@ -16,7 +16,7 @@
       - "4000:4000"
     command: >
       manage -H :4000 --replication
-      --advertise {{ host_ip.stdout }}:4000
+      --advertise {{ host_ip_external.stdout }}:4000
       consul://{{ consul_ip.stdout }}:8500/docker
     docker_api_version: 1.22
   tags: docker
@@ -30,7 +30,7 @@
     state: reloaded
     restart_policy: always
     command: >
-      join --advertise={{ host_ip.stdout }}:2375
+      join --advertise={{ host_ip_external.stdout }}:2375
       consul://{{ consul_ip.stdout }}:8500/docker
     docker_api_version: 1.22
   tags: docker
