@@ -15,6 +15,9 @@ consul_random_hostname: "{{ groups['consul_cluster'] | random | string }}"
 
 # iptables configuration file
 iptables_config: "/etc/sysconfig/iptables"
+
+# set true if the host is natted
+host_natted: false
 ```
 The cluster is built based on the existence of hosts in two specific hostgroups:
 
