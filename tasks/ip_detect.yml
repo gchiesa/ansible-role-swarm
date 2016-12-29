@@ -2,19 +2,19 @@
 - name: Get the host ip
   shell: getent ahostsv4 $(hostname -f) | grep -v '127.0' | grep 'STREAM' | awk '{print $1}'
   register: host_ip
-  when: host_natted == False
+  when: not host_natted
 
 - name: Get the host ip (natted)
   shell: host $(hostname -f) | awk '{print $(NF)}'
   register: host_ip
-  when: host_natted == True
+  when: host_natted
 
 - name: Get the consul bootstrap IP
   shell: getent ahostsv4 {{ consul_random_hostname }} | grep -v '127.0' | grep 'STREAM' | awk '{print $1}'
   register: consul_ip
-  when: host_natted == False
+  when: not host_natted
 
 - name: Get the consul bootstrap IP (natted)
   shell: host {{ consul_random_hostname }} | awk '{print $(NF)}'
   register: consul_ip
-  when: host_natted == True
+  when: host_natted
