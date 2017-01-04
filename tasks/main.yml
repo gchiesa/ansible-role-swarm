@@ -3,6 +3,14 @@
 - include: yum.yml
 - include: firewall.yml
 
+- name: Remove swarm manager
+  docker:
+    name: swarm_manager
+    image: swarm
+    state: absent
+  when:
+    - inventory_hostname in groups['swarm_managers']
+
 - name: Start the swarm manager
   when:
     - inventory_hostname in groups['swarm_managers']
@@ -20,6 +28,14 @@
       consul://{{ consul_ip.stdout }}:8500/docker
     docker_api_version: 1.22
   tags: docker
+
+- name: Remove swarm node
+  docker:
+    name: swarm_node
+    image: swarm
+    state: absent
+  when:
+    - inventory_hostname in groups['swarm_agents']
 
 - name: Start the swarm nodes
   when:
