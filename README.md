@@ -1,7 +1,7 @@
 gchiesa.swarm
 =============
 
-Install and setup a swarm cluster on Oracle Linux 7 and CentOS 7
+Install and setup a swarm cluster on Enterprise Linux
 
 Role Variables
 --------------
