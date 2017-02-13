@@ -1,33 +1,24 @@
 ---
-- include: ip_detect.yml
 - include: yum.yml
 - include: firewall.yml
-
-- name: Remove swarm manager
-  docker:
-    name: swarm_manager
-    image: swarm
-    state: absent
-  when:
-    - inventory_hostname in groups['swarm_managers']
 
 - name: Start the swarm manager
   when:
     - inventory_hostname in groups['swarm_managers']
-  docker:
+  docker_container:
     name: swarm_manager
     image: swarm
-    state: reloaded
+    state: started
+    recreate: yes
     restart_policy: always
-    expose: 4000
-    ports:
+    exposed_ports: 
+      - 4000
+    published_ports:
       - "4000:4000"
     command: >
       manage -H :4000 --replication
-      --advertise {{ host_ip_external.stdout }}:4000
-      consul://{{ consul_ip.stdout }}:8500/docker
-    docker_api_version: 1.22
-  tags: docker
+      --advertise {{ iputils_ip_external }}:4000
+      etcd://{{ iputils_ip_etcd_bootstrap }}:4001/docker
 
 - name: Remove swarm node
   docker:
@@ -43,10 +34,9 @@
   docker:
     name: swarm_node
     image: swarm
-    state: reloaded
+    state: started
+    recreate: yes
     restart_policy: always
     command: >
-      join --advertise={{ host_ip_external.stdout }}:2375
-      consul://{{ consul_ip.stdout }}:8500/docker
-    docker_api_version: 1.22
-  tags: docker
+      join --advertise={{ iputils_ip_external }}:2375
+      etcd://{{ iputils_ip_etcd_bootstrap }}:4001/docker
