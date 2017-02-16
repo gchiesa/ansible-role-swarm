@@ -10,6 +10,8 @@
     image: swarm
     state: started
     recreate: yes
+    restart: yes
+    force_kill: yes
     restart_policy: always
     exposed_ports: 
       - 4000
@@ -19,24 +21,22 @@
       manage -H :4000 --replication
       --advertise {{ iputils_ip_external }}:4000
       etcd://{{ iputils_ip_etcd_bootstrap }}:4001/docker
-
-- name: Remove swarm node
-  docker:
-    name: swarm_node
-    image: swarm
-    state: absent
-  when:
-    - inventory_hostname in groups['swarm_agents']
+    labels: 
+      SYSTEM_CONTAINER: "true"
 
 - name: Start the swarm nodes
   when:
     - inventory_hostname in groups['swarm_agents']
-  docker:
+  docker_container:
     name: swarm_node
     image: swarm
     state: started
     recreate: yes
+    restart: yes
+    force_kill: yes
     restart_policy: always
     command: >
       join --advertise={{ iputils_ip_external }}:2375
       etcd://{{ iputils_ip_etcd_bootstrap }}:4001/docker
+    labels: 
+      SYSTEM_CONTAINER: "true"

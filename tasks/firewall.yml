@@ -1,11 +1,11 @@
 ---
-- name: Remove the etcd chain
+- name: Remove the swarm chain
   shell: >
     ( iptables -t filter -D INPUT -j SWARM &&
       iptables -t filter -F SWARM &&
       iptables -t filter -X SWARM) || true
 
-- name: Create the shipyard chain
+- name: Create the swarm chain
   shell: iptables -t filter -N SWARM && iptables -t filter -I INPUT 1 -j SWARM
 
 - name: Open port for swarm communication on iptables
@@ -16,10 +16,12 @@
     protocol: "{{ item.proto }}"
     state: present
     jump: ACCEPT
-    comment: "etcd for port {{ item.port }}/{{ item.proto }}"
+    comment: "swarm for port {{ item.port }}/{{ item.proto }}"
   with_items:
     - proto: tcp
       port: 2375
+    - proto: tcp
+      port: 4000
 
 - name: Iptables save
   shell: iptables-save > "{{ iptables_config }}"
