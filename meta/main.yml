@@ -10,5 +10,5 @@ galaxy_info:
         - 7
   galaxy_tags: [docker, swarm]
 dependencies:
-  - { role: gchiesa.etcd }
-  - { role: gchiesa.iputils, modules: ['common', 'etcd'], etcd_bootstrap_hostname: "{{ etcd_random_hostname }}" }
+  - { role: gchiesa.docker }
+  - { role: gchiesa.iputils, modules: ['common'] }

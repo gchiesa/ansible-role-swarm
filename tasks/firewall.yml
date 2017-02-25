@@ -19,9 +19,13 @@
     comment: "swarm for port {{ item.port }}/{{ item.proto }}"
   with_items:
     - proto: tcp
-      port: 2375
+      port: 2377
     - proto: tcp
-      port: 4000
+      port: 7946
+    - proto: udp
+      port: 7946       
+    - proto: udp
+      port: 4789
 
 - name: Iptables save
   shell: iptables-save > "{{ iptables_config }}"
