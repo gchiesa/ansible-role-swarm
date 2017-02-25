@@ -1,30 +1,31 @@
 ---
-- name: Check if the swarm_docker chain exists
-  shell: iptables -t filter -L swarm_docker
-  register: fw_swarm_docker
-  ignore_errors: true
+- name: Remove the swarm chain
+  shell: >
+    ( iptables -t filter -D INPUT -j SWARM &&
+      iptables -t filter -F SWARM &&
+      iptables -t filter -X SWARM) || true
 
-- name: Create the SWARM_DOCKER chain
-  shell: iptables -t filter -N swarm_docker && iptables -t filter -I INPUT 1 -j swarm_docker
-  when: fw_swarm_docker.rc != 0
+- name: Create the swarm chain
+  shell: iptables -t filter -N SWARM && iptables -t filter -I INPUT 1 -j SWARM
 
-- name: Check if the docker_service is already opened
-  shell: iptables -t filter -L swarm_docker | grep docker_service
-  register: fw_docker_service
-  ignore_errors: true
-
-- name: Open port for docker communication on iptables
+- name: Open port for swarm communication on iptables
   iptables:
     table: filter
-    chain: swarm_docker
-    # destination: "{{ host_ip.stdout }}/24"
-    destination_port: 2375
-    protocol: tcp
+    chain: SWARM
+    destination_port: "{{ item.port }}"
+    protocol: "{{ item.proto }}"
     state: present
     jump: ACCEPT
-    comment: docker_service
-  when: fw_docker_service.rc != 0
-  # notify: reload iptables
+    comment: "swarm for port {{ item.port }}/{{ item.proto }}"
+  with_items:
+    - proto: tcp
+      port: 2377
+    - proto: tcp
+      port: 7946
+    - proto: udp
+      port: 7946       
+    - proto: udp
+      port: 4789
 
 - name: Iptables save
   shell: iptables-save > "{{ iptables_config }}"

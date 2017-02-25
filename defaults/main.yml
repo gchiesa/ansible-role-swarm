@@ -4,10 +4,6 @@
 # proxy server to use for yum installation
 proxy: ""
 
-# consul hostname to use for registering
-# it will be randomly choosen from the consul_cluster host group
-consul_random_hostname: "{{ groups['consul_cluster'] | random | string }}"
-
 # iptables configuration file
 iptables_config: "/etc/sysconfig/iptables"
 

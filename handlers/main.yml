@@ -1,4 +1,7 @@
 ---
 # handlers file for ansible-role-swarm
-- name: reload iptables
-  service: name=iptables state=reloaded
+- name: restart docker
+  service:
+    name: docker
+    state: restarted
+  

@@ -1,52 +1,64 @@
 ---
-- include: ip_detect.yml
 - include: yum.yml
 - include: firewall.yml
 
-- name: Remove swarm manager
-  docker:
-    name: swarm_manager
-    image: swarm
-    state: absent
-  when:
-    - inventory_hostname in groups['swarm_managers']
+- name: Disable live restore
+  replace:
+    dest: /etc/docker/daemon.json
+    regexp: '"live-restore": true'
+    replace: '"live-restore": false'
+    backup: yes
+  notify: restart docker
 
-- name: Start the swarm manager
-  when:
-    - inventory_hostname in groups['swarm_managers']
-  docker:
-    name: swarm_manager
-    image: swarm
-    state: reloaded
-    restart_policy: always
-    expose: 4000
-    ports:
-      - "4000:4000"
-    command: >
-      manage -H :4000 --replication
-      --advertise {{ host_ip_external.stdout }}:4000
-      consul://{{ consul_ip.stdout }}:8500/docker
-    docker_api_version: 1.22
-  tags: docker
+- meta: flush_handlers  
 
-- name: Remove swarm node
-  docker:
-    name: swarm_node
-    image: swarm
-    state: absent
+- block:
+    - name: Start the swarm manager [1st manager]
+      shell: docker swarm update
+  rescue:
+    - name: Initializing the swarm manager [1st manager]
+      shell: >
+        docker swarm init --advertise-addr {{ iputils_ip_external }}
+  when: 
+    - inventory_hostname in groups['swarm_managers'][0]
+
+- block: 
+    - name: Get the manager token command
+      shell: >
+        docker swarm join-token manager | grep -A2 'docker swarm' 
+      register: swarm_manager_command
+
+    - name: Get the worker token command 
+      shell: >
+        docker swarm join-token worker | grep -A2 'docker swarm' 
+      register: swarm_worker_command
+
+    - name: Saving facts
+      set_fact:
+        swarm_manager_command: '{{ swarm_manager_command.stdout }}'
+        swarm_worker_command: '{{ swarm_worker_command.stdout }}'
+  when: 
+    - inventory_hostname in groups['swarm_managers'][0]
+
+- block:
+    - name: Start the swarm manager [other managers]
+      shell: >
+        docker info 2>/dev/null| grep -i 'swarm: active'
+  rescue: 
+    - name: Initializing swarm manager [other managers]
+      shell: >
+        {{ hostvars[groups['swarm_managers'][0]]['swarm_manager_command'] }}
+  when:
+    - inventory_hostname in groups['swarm_managers'][1:]
+
+- block:
+    - name: Start the swarm workers
+      shell: >
+        docker info 2>/dev/null| grep -i 'swarm: active'
+  rescue: 
+    - name: Initializing swarm workers
+      shell: >
+        {{ hostvars[groups['swarm_managers'][0]]['swarm_worker_command'] }}
   when:
     - inventory_hostname in groups['swarm_agents']
 
-- name: Start the swarm nodes
-  when:
-    - inventory_hostname in groups['swarm_agents']
-  docker:
-    name: swarm_node
-    image: swarm
-    state: reloaded
-    restart_policy: always
-    command: >
-      join --advertise={{ host_ip_external.stdout }}:2375
-      consul://{{ consul_ip.stdout }}:8500/docker
-    docker_api_version: 1.22
-  tags: docker
