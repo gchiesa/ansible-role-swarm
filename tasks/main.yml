@@ -1,7 +1,17 @@
 ---
-- include: yum.yml
 - include: firewall.yml
 
+- block:
+    - name: Ensure docker daemon.json exists
+      file: 
+        name: /etc/docker/daemon.json
+        state: file
+  rescue: 
+    - name: Create an empty daemon.json
+      copy:
+        src: docker_daemon.json
+        dest: /etc/docker/daemon.json
+        
 - name: Disable live restore
   replace:
     dest: /etc/docker/daemon.json
